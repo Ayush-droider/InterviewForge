@@ -1,0 +1,70 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: interviewforge-backend
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/interviewforge?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+  ai:
+
+    openai:
+      api-key: ${GROQ_API_KEY}
+      base-url: https://api.groq.com/openai
+
+      chat:
+        options:
+          model: llama-3.3-70b-versatile
+          temperature: 0.3
+
+    ollama:
+      base-url: http://localhost:11434
+
+      embedding:
+        options:
+          model: nomic-embed-text
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: 86400000
+
+interview:
+  max-questions: 6
+
+  follow-up:
+    max-depth: 2
+    lower-score: 40
+    upper-score: 79
+
+rag:
+  retrieval:
+    top-k: 4
+    max-distance: 0.65
+
+chroma:
+  tenant: default_tenant
+  database: default_database
+  collection: interviewforge
+
+logging:
+  level:
+    root: INFO
+    com.interviewforge: DEBUG

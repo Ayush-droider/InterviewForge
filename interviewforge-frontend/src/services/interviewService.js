@@ -5,6 +5,11 @@ export const startInterview = async (payload) => {
     return response.data;
 };
 
+export const getInterview = async (interviewId) => {
+    const response = await api.get(`/interviews/${interviewId}`);
+    return response.data;
+};
+
 export const submitAnswer = async (interviewId, payload) => {
     const response = await api.post(
         `/interviews/${interviewId}/answer`,

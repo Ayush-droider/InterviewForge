@@ -36,6 +36,7 @@ export const waitForAnalysis = async (
     const start = Date.now();
 
     while (Date.now() - start < timeout) {
+
         const resume = await getResumeById(id);
 
         onStatusChange?.(resume);

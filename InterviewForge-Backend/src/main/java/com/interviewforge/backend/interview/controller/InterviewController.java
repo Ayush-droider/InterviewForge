@@ -29,25 +29,46 @@ public class InterviewController {
     private final InterviewHistoryService interviewHistoryService;
 
     @PostMapping
-    public ResponseEntity<InterviewResponse> start(@Valid @RequestBody StartInterviewRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(interviewService.start(request));
+    public ResponseEntity<InterviewResponse> start(
+            @Valid @RequestBody StartInterviewRequest request
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(interviewService.start(request));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<InterviewResponse> getInterview(
+            @PathVariable Long id
+    ) {
+        return ResponseEntity.ok(interviewService.getInterview(id));
     }
 
     @PostMapping("/{id}/answer")
-    public ResponseEntity<InterviewResponse> submitAnswer(@PathVariable Long id, @Valid @RequestBody SubmitAnswerRequest request) {
-        return ResponseEntity.ok(answerEvaluationService.submitAnswer(id, request));
+    public ResponseEntity<InterviewResponse> submitAnswer(
+            @PathVariable Long id,
+            @Valid @RequestBody SubmitAnswerRequest request
+    ) {
+        return ResponseEntity.ok(
+                answerEvaluationService.submitAnswer(id, request)
+        );
     }
 
     @GetMapping("/{id}/scorecard")
-    public ResponseEntity<ScorecardResponse> getScorecard(@PathVariable Long id) {
-        return ResponseEntity.ok(scorecardService.getScorecard(id));
+    public ResponseEntity<ScorecardResponse> getScorecard(
+            @PathVariable Long id
+    ) {
+        return ResponseEntity.ok(
+                scorecardService.getScorecard(id)
+        );
     }
 
-    // Added to InterviewController
     @GetMapping
     public ResponseEntity<Page<InterviewSummaryResponse>> getMyHistory(
             @PageableDefault(size = 10, sort = "startedAt") Pageable pageable
     ) {
-        return ResponseEntity.ok(interviewHistoryService.getMyHistory(pageable));
+        return ResponseEntity.ok(
+                interviewHistoryService.getMyHistory(pageable)
+        );
     }
 }

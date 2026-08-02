@@ -62,7 +62,7 @@ rag:
 chroma:
   tenant: default_tenant
   database: default_database
-  collection: interviewforge
+  collection: interviewforge-ollama-v1
 
 logging:
   level:

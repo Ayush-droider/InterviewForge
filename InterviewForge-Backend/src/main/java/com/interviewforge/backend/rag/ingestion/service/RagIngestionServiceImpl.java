@@ -1,9 +1,9 @@
 package com.interviewforge.backend.rag.ingestion.service;
 
-import com.interviewforge.backend.studyresource.entity.StudyResource;
 import com.interviewforge.backend.rag.chroma.store.ChromaService;
-import com.interviewforge.backend.rag.ingestion.chunking.TextChunkingService;
 import com.interviewforge.backend.rag.embedding.EmbeddingService;
+import com.interviewforge.backend.rag.ingestion.chunking.TextChunkingService;
+import com.interviewforge.backend.studyresource.entity.StudyResource;
 import com.interviewforge.backend.studyresource.repository.StudyResourceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,23 +33,39 @@ public class RagIngestionServiceImpl implements RagIngestionService {
                             new IllegalArgumentException(
                                     "Study resource not found: " + studyResourceId));
 
+            log.info("========================================");
             log.info("Starting RAG ingestion for StudyResource={}", studyResourceId);
+            log.info("========================================");
 
-            updateStatus(studyResourceId,
-                    StudyResource.IngestionStatus.CHUNKING);
+            updateStatus(
+                    studyResourceId,
+                    StudyResource.IngestionStatus.CHUNKING
+            );
+
+            log.info("Chunking started...");
 
             List<String> chunks = textChunkingService.chunk(rawText);
 
-            log.info("Generated {} chunks", chunks.size());
+            log.info("Chunking completed.");
+            log.info("Generated {} chunks.", chunks.size());
 
-            updateStatus(studyResourceId,
-                    StudyResource.IngestionStatus.EMBEDDING);
+            updateStatus(
+                    studyResourceId,
+                    StudyResource.IngestionStatus.EMBEDDING
+            );
+
+            log.info("Embedding started...");
 
             List<List<Float>> embeddings = embeddingService.embed(chunks);
+
+            log.info("Embedding completed.");
+            log.info("Generated {} embeddings.", embeddings.size());
 
             List<String> ids = chunks.stream()
                     .map(chunk -> UUID.randomUUID().toString())
                     .toList();
+
+            log.info("Sending documents to Chroma...");
 
             chromaService.addDocuments(
                     ids,
@@ -60,27 +76,48 @@ public class RagIngestionServiceImpl implements RagIngestionService {
                     resource.getTopic()
             );
 
-            updateStatus(studyResourceId,
-                    StudyResource.IngestionStatus.COMPLETED);
-
-            log.info("Successfully ingested StudyResource={} with {} chunks",
-                    studyResourceId,
-                    chunks.size());
-
-        } catch (Exception ex) {
-
-            log.error("Failed to ingest StudyResource={}", studyResourceId, ex);
+            log.info("Documents successfully stored in Chroma.");
 
             updateStatus(
                     studyResourceId,
-                    StudyResource.IngestionStatus.FAILED
+                    StudyResource.IngestionStatus.COMPLETED
             );
+
+            log.info("========================================");
+            log.info("RAG ingestion completed successfully.");
+            log.info("StudyResource={}", studyResourceId);
+            log.info("========================================");
+
+        } catch (Exception ex) {
+
+            log.error("========================================");
+            log.error("RAG INGESTION FAILED");
+            log.error("StudyResourceId={}", studyResourceId);
+            log.error("Exception Type={}", ex.getClass().getName());
+            log.error("Exception Message={}", ex.getMessage(), ex);
+            log.error("========================================");
+
+            try {
+                updateStatus(
+                        studyResourceId,
+                        StudyResource.IngestionStatus.FAILED
+                );
+            } catch (Exception updateException) {
+
+                log.error(
+                        "Failed to update ingestion status to FAILED.",
+                        updateException
+                );
+
+            }
         }
     }
 
     @Transactional
-    protected void updateStatus(Long studyResourceId,
-                                StudyResource.IngestionStatus status) {
+    protected void updateStatus(
+            Long studyResourceId,
+            StudyResource.IngestionStatus status
+    ) {
 
         StudyResource resource = studyResourceRepository.findById(studyResourceId)
                 .orElseThrow(() ->

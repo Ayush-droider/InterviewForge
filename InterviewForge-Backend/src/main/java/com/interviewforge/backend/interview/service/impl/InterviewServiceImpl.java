@@ -83,16 +83,19 @@ public class InterviewServiceImpl implements InterviewService {
             InterviewQuestion currentQuestion
     ) {
 
-        InterviewQuestionResponse questionResponse =
-                new InterviewQuestionResponse(
-                        currentQuestion.getId(),
-                        currentQuestion.getSequenceNumber(),
-                        currentQuestion.getQuestionText(),
-                        currentQuestion.getTopic(),
-                        currentQuestion.getDifficulty() != null
-                                ? currentQuestion.getDifficulty().name()
-                                : null
-                );
+        InterviewQuestionResponse questionResponse = null;
+
+        if (currentQuestion != null) {
+            questionResponse = new InterviewQuestionResponse(
+                    currentQuestion.getId(),
+                    currentQuestion.getSequenceNumber(),
+                    currentQuestion.getQuestionText(),
+                    currentQuestion.getTopic(),
+                    currentQuestion.getDifficulty() != null
+                            ? currentQuestion.getDifficulty().name()
+                            : null
+            );
+        }
 
         return new InterviewResponse(
                 interview.getId(),
@@ -100,5 +103,29 @@ public class InterviewServiceImpl implements InterviewService {
                 interview.getStatus().name(),
                 questionResponse
         );
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public InterviewResponse getInterview(Long interviewId) {
+
+        User currentUser = authenticatedUserProvider.getCurrentUser();
+
+        Interview interview = interviewRepository.findById(interviewId)
+                .orElseThrow(() ->
+                        new NoSuchElementException(
+                                "Interview not found with id: " + interviewId));
+
+        if (!interview.getUser().getId().equals(currentUser.getId())) {
+            throw new ResourceOwnershipException(
+                    "You do not have access to this interview");
+        }
+
+        InterviewQuestion currentQuestion = interview.getQuestions()
+                .stream()
+                .filter(question -> question.getAnswerText() == null)
+                .findFirst()
+                .orElse(null);
+
+        return toResponse(interview, currentQuestion);
     }
 }

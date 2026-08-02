@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+
 import DashboardLayout from "@/layouts/DashboardLayout";
+
 import {
     User,
     Mail,
@@ -8,10 +10,14 @@ import {
     Trophy,
 } from "lucide-react";
 
+import { getCurrentUser } from "@/services/authService";
 import { getResumeHistory } from "@/services/resumeService";
 import { getInterviewHistory } from "@/services/interviewService";
 
 export default function Profile() {
+
+    const [user, setUser] = useState(null);
+
     const [stats, setStats] = useState({
         resumes: 0,
         interviews: 0,
@@ -23,23 +29,39 @@ export default function Profile() {
     }, []);
 
     const loadData = async () => {
+
         try {
-            const resumes = await getResumeHistory();
-            const interviews = await getInterviewHistory();
+
+            const [
+                currentUser,
+                resumes,
+                interviews,
+            ] = await Promise.all([
+                getCurrentUser(),
+                getResumeHistory(),
+                getInterviewHistory(),
+            ]);
+
+            setUser(currentUser);
 
             setStats({
                 resumes: resumes.length,
                 interviews: interviews.length,
                 completed: interviews.filter(
-                    (item) => item.status === "COMPLETED"
+                    interview => interview.status === "COMPLETED"
                 ).length,
             });
+
         } catch (error) {
+
             console.error(error);
+
         }
+
     };
 
     return (
+
         <DashboardLayout>
 
             <div className="mx-auto max-w-6xl space-y-8">
@@ -57,14 +79,16 @@ export default function Profile() {
                         </div>
 
                         <h1 className="mt-6 text-3xl font-bold">
-                            InterviewForge User
+
+                            {user?.fullName ?? "Loading..."}
+
                         </h1>
 
                         <p className="mt-2 flex items-center gap-2 text-slate-500">
 
                             <Mail size={18} />
 
-                            Logged-in User
+                            {user?.email ?? "Loading..."}
 
                         </p>
 
@@ -132,5 +156,7 @@ export default function Profile() {
             </div>
 
         </DashboardLayout>
+
     );
+
 }

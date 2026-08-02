@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 
 import DashboardLayout from "@/layouts/DashboardLayout";
@@ -9,7 +9,10 @@ import ChatInput from "@/components/interview/ChatInput";
 import TypingIndicator from "@/components/interview/TypingIndicator";
 import ChatHeader from "@/components/interview/ChatHeader";
 
-import { submitAnswer } from "@/services/interviewService";
+import {
+    submitAnswer,
+    getInterview,
+} from "@/services/interviewService";
 
 import toast from "react-hot-toast";
 
@@ -29,10 +32,12 @@ const createMessage = ({
 export default function InterviewSession() {
 
     const navigate = useNavigate();
-
+    const { id } = useParams();
     const { state } = useLocation();
 
-    const [interview, setInterview] = useState(state?.interview);
+    const [interview, setInterview] = useState(
+        state?.interview ?? null
+    );
 
     const [answer, setAnswer] = useState("");
 
@@ -44,34 +49,75 @@ export default function InterviewSession() {
 
     const [messages, setMessages] = useState(() => {
 
-        if (!state?.interview) return [];
+        if (!state?.interview?.currentQuestion) {
+            return [];
+        }
 
         return [
-
             createMessage({
-
                 sender: "AI",
-
                 text: state.interview.currentQuestion.questionText,
-
                 topic: state.interview.currentQuestion.topic,
-
                 difficulty: state.interview.currentQuestion.difficulty,
-
             }),
-
         ];
 
     });
 
+    /*
+     * Load interview if user opened from history
+     * or refreshed the page.
+     */
+    useEffect(() => {
+
+        if (interview) return;
+
+        const loadInterview = async () => {
+
+            try {
+
+                const data = await getInterview(id);
+
+                setInterview(data);
+
+                if (data.currentQuestion) {
+
+                    setMessages([
+                        createMessage({
+                            sender: "AI",
+                            text: data.currentQuestion.questionText,
+                            topic: data.currentQuestion.topic,
+                            difficulty: data.currentQuestion.difficulty,
+                        }),
+                    ]);
+
+                } else {
+
+                    navigate(`/interview/${id}/scorecard`);
+
+                }
+
+            } catch (e) {
+
+                console.error(e);
+
+                toast.error("Unable to load interview.");
+
+                navigate("/history");
+
+            }
+
+        };
+
+        loadInterview();
+
+    }, [id, interview, navigate]);
+
     useEffect(() => {
 
         conversationRef.current?.scrollTo({
-
             top: conversationRef.current.scrollHeight,
-
             behavior: "smooth",
-
         });
 
     }, [messages, typing]);
@@ -99,13 +145,11 @@ export default function InterviewSession() {
     if (!interview) {
 
         return (
-
             <DashboardLayout>
-
-                Interview not found.
-
+                <div className="flex h-[70vh] items-center justify-center text-xl font-semibold">
+                    Loading Interview...
+                </div>
             </DashboardLayout>
-
         );
 
     }
@@ -129,11 +173,8 @@ export default function InterviewSession() {
             ...previous,
 
             createMessage({
-
                 sender: "USER",
-
                 text: userAnswer,
-
             }),
 
         ]);
@@ -200,14 +241,14 @@ export default function InterviewSession() {
         }
 
     };
+
     return (
+
         <DashboardLayout>
 
             <div className="mx-auto flex h-[85vh] max-w-5xl flex-col overflow-hidden rounded-3xl bg-slate-100 shadow-lg">
 
                 <ChatHeader role={interview.targetRole} />
-
-                {/* Conversation */}
 
                 <div
                     ref={conversationRef}
@@ -252,20 +293,13 @@ export default function InterviewSession() {
 
                 </div>
 
-                {/* Bottom Input */}
-
                 <div className="border-t bg-white p-5">
 
                     <ChatInput
-
                         value={answer}
-
                         onChange={setAnswer}
-
                         onSend={handleNext}
-
                         disabled={loading}
-
                     />
 
                 </div>
@@ -273,5 +307,7 @@ export default function InterviewSession() {
             </div>
 
         </DashboardLayout>
+
     );
+
 }

@@ -98,26 +98,30 @@ public class ChromaService {
                 metadata
         );
 
-        String response = chromaWebClient.post()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/api/v2/tenants/{tenant}/databases/{database}/collections/{collectionId}/add")
-                        .build(
-                                chromaProperties.getTenant(),
-                                chromaProperties.getDatabase(),
-                                collectionId
-                        ))
-                .bodyValue(request)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+        try {
 
-        log.info("Chroma add response: {}", response);
+            String response = chromaWebClient.post()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/api/v2/tenants/{tenant}/databases/{database}/collections/{collectionId}/add")
+                            .build(
+                                    chromaProperties.getTenant(),
+                                    chromaProperties.getDatabase(),
+                                    collectionId
+                            ))
+                    .bodyValue(request)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
 
-        log.info(
-                "Stored {} chunks in Chroma for StudyResource={}",
-                documents.size(),
-                studyResourceId
-        );
+            log.info("Chroma response = {}", response);
+
+        } catch (org.springframework.web.reactive.function.client.WebClientResponseException ex) {
+
+            log.error("Status = {}", ex.getStatusCode());
+            log.error("Response = {}", ex.getResponseBodyAsString());
+
+            throw ex;
+        }
     }
 
     /**

@@ -3,16 +3,17 @@ package com.interviewforge.backend.resume.entity;
 import com.interviewforge.backend.auth.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "resumes")
 @Getter
 @Setter
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Resume {
 
     @Id
@@ -21,38 +22,57 @@ public class Resume {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable =false)
     private User user;
 
     @Column(nullable = false)
     private String fileName;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false,columnDefinition = "LONGTEXT")
     private String extractedText;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "LONGTEXT")
     private String skillsJson;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "LONGTEXT")
     private String experienceSummary;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @Builder.Default
-    private AnalysisStatus analysisStatus = AnalysisStatus.PENDING;
-
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime uploadedAt;
-
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "LONGTEXT")
     private String suggestedTopicsJson;
 
+    private Integer resumeScore;
+
+    private Integer atsScore;
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String strengths;
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String weaknesses;
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String recommendations;
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String missingKeywords;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    @Column(nullable = false)
+    private AnalysisStatus analysisStatus = AnalysisStatus.PENDING;
+
+    @Column(nullable = false,updatable = false)
+    private LocalDateTime uploadedAt;
+
     @PrePersist
-    protected void onCreate() {
-        this.uploadedAt = LocalDateTime.now();
+    public void onCreate() {
+        uploadedAt = LocalDateTime.now();
     }
 
     public enum AnalysisStatus {
-        PENDING, ANALYZING, COMPLETED, FAILED
+        PENDING,
+        ANALYZING,
+        COMPLETED,
+        FAILED
     }
 }

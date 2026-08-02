@@ -58,6 +58,8 @@ public class JwtService {
     }
 
     private SecretKey getSigningKey() {
+        System.out.println(jwtProperties.getSecret());
+        System.out.println(jwtProperties.getSecret().length());
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtProperties.getSecret()));
     }
 }

@@ -15,17 +15,14 @@ export default function InterviewHistory() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-
         loadHistory();
-
     }, []);
 
     const loadHistory = async () => {
 
         try {
 
-            const data =
-                await getInterviewHistory();
+            const data = await getInterviewHistory();
 
             setHistory(data);
 
@@ -50,9 +47,7 @@ export default function InterviewHistory() {
             <div className="rounded-3xl bg-white p-8 shadow-sm">
 
                 <h1 className="text-3xl font-bold">
-
                     Interview History
-
                 </h1>
 
                 <table className="mt-8 w-full">
@@ -97,49 +92,52 @@ export default function InterviewHistory() {
                             >
 
                                 <td className="py-5">
-
                                     {item.targetRole}
-
                                 </td>
 
                                 <td>
-
                                     {item.overallScore ?? "--"}
-
                                 </td>
 
                                 <td>
-
                                     {item.questionsAnswered}
-
                                 </td>
 
                                 <td>
-
                                     {item.status}
-
                                 </td>
 
                                 <td>
-
                                     {new Date(
                                         item.startedAt
                                     ).toLocaleDateString()}
-
                                 </td>
 
                                 <td>
 
-                                    <button
-                                        onClick={() => navigate(
-                                            `/interview/${item.id}/scorecard`
-                                        )}
-                                        className="rounded-lg bg-indigo-600 px-4 py-2 text-white"
-                                    >
+                                    {item.status === "COMPLETED" ? (
 
-                                        View
+                                        <button
+                                            onClick={() =>
+                                                navigate(`/interview/${item.id}/scorecard`)
+                                            }
+                                            className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+                                        >
+                                            View Scorecard
+                                        </button>
 
-                                    </button>
+                                    ) : (
+
+                                        <button
+                                            onClick={() =>
+                                                navigate(`/interview/${item.id}`)
+                                            }
+                                            className="rounded-lg bg-amber-500 px-4 py-2 text-white hover:bg-amber-600"
+                                        >
+                                            Continue
+                                        </button>
+
+                                    )}
 
                                 </td>
 

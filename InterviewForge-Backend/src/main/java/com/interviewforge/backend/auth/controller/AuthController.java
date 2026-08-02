@@ -3,6 +3,8 @@ package com.interviewforge.backend.auth.controller;
 import com.interviewforge.backend.auth.dto.request.LoginRequest;
 import com.interviewforge.backend.auth.dto.request.RegisterRequest;
 import com.interviewforge.backend.auth.dto.response.AuthResponse;
+import com.interviewforge.backend.auth.dto.response.UserProfileResponse;
+import com.interviewforge.backend.auth.service.AuthProfileService;
 import com.interviewforge.backend.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,14 +18,25 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final AuthProfileService authProfileService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
+    public ResponseEntity<AuthResponse> register(
+            @Valid @RequestBody RegisterRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(authService.register(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(
+            @Valid @RequestBody LoginRequest request
+    ) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileResponse> me() {
+        return ResponseEntity.ok(authProfileService.getCurrentUser());
     }
 }

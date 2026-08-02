@@ -1,0 +1,53 @@
+# ===========================
+# Backend (Spring Boot)
+# ===========================
+
+InterviewForge-Backend/target/
+InterviewForge-Backend/.idea/
+InterviewForge-Backend/*.iml
+InterviewForge-Backend/*.log
+
+# Maven Wrapper
+InterviewForge-Backend/.mvn/wrapper/maven-wrapper.jar
+
+# ===========================
+# Frontend (React + Vite)
+# ===========================
+
+interviewforge-frontend/node_modules/
+interviewforge-frontend/dist/
+
+# ===========================
+# IDE
+# ===========================
+
+.vscode/
+.idea/
+*.iml
+
+# ===========================
+# macOS
+# ===========================
+
+.DS_Store
+
+# ===========================
+# Logs
+# ===========================
+
+*.log
+
+# ===========================
+# Environment Variables
+# ===========================
+
+.env
+**/.env
+**/.env.local
+**/.env.*
+
+# ===========================
+# Coverage
+# ===========================
+
+coverage/

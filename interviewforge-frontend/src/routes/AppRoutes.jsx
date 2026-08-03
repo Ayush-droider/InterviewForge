@@ -6,7 +6,7 @@ import Register from "@/pages/auth/Register";
 
 import Dashboard from "@/pages/dashboard/Dashboard";
 
-import Resume from "@/pages/resume/Resume";
+import Resume from "@/pages/resume/resume";
 import ResumeDetails from "@/pages/resume/ResumeDetails";
 
 import InterviewSetup from "@/pages/interview/InterviewSetup";

@@ -82,7 +82,7 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "https://YOUR-VERCEL-APP.vercel.app"
+                "https://interview-forge-inky.vercel.app"
         ));
 
         configuration.setAllowedMethods(List.of(

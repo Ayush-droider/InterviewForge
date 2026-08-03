@@ -22,38 +22,38 @@ public class Resume {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable =false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(nullable = false)
     private String fileName;
 
-    @Column(nullable = false,columnDefinition = "LONGTEXT")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String extractedText;
 
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String skillsJson;
 
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String experienceSummary;
 
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String suggestedTopicsJson;
 
     private Integer resumeScore;
 
     private Integer atsScore;
 
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String strengths;
 
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String weaknesses;
 
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String recommendations;
 
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String missingKeywords;
 
     @Enumerated(EnumType.STRING)
@@ -61,7 +61,7 @@ public class Resume {
     @Column(nullable = false)
     private AnalysisStatus analysisStatus = AnalysisStatus.PENDING;
 
-    @Column(nullable = false,updatable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime uploadedAt;
 
     @PrePersist

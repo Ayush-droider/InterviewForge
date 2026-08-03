@@ -45,11 +45,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt = authHeader.substring(BEARER_PREFIX.length());
 
         try {
+
             final String userEmail = jwtService.extractUsername(jwt);
 
-            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (userEmail != null
+                    && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+                UserDetails userDetails =
+                        userDetailsService.loadUserByUsername(userEmail);
 
                 if (jwtService.isTokenValid(jwt, userDetails)) {
 
@@ -61,16 +64,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             );
 
                     authToken.setDetails(
-                            new WebAuthenticationDetailsSource().buildDetails(request)
+                            new WebAuthenticationDetailsSource()
+                                    .buildDetails(request)
                     );
 
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    SecurityContextHolder.getContext()
+                            .setAuthentication(authToken);
                 }
             }
-        } catch (JwtException ex) {
-            // Invalid/expired token: leave SecurityContext unauthenticated.
-            // The request proceeds anonymously and will be rejected downstream
-            // by SecurityCOnfig's authorization rules if the endpoint requires auth.
+
+        } catch (Exception ex) {
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);

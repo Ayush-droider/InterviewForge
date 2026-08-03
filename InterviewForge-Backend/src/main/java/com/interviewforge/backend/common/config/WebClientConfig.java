@@ -13,11 +13,4 @@ public class WebClientConfig {
                 .baseUrl("https://api.groq.com/openai")
                 .build();
     }
-
-    @Bean("chromaWebClient")
-    public WebClient chromaWebClient() {
-        return WebClient.builder()
-                .baseUrl("http://localhost:8000")
-                .build();
-    }
 }

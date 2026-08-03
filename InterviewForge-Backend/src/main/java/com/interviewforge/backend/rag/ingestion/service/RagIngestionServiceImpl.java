@@ -1,8 +1,8 @@
 package com.interviewforge.backend.rag.ingestion.service;
 
-import com.interviewforge.backend.rag.chroma.store.ChromaService;
-import com.interviewforge.backend.rag.embedding.EmbeddingService;
+import com.interviewforge.backend.rag.embedding.JinaEmbeddingClient;
 import com.interviewforge.backend.rag.ingestion.chunking.TextChunkingService;
+import com.interviewforge.backend.rag.vector.VectorRepository;
 import com.interviewforge.backend.studyresource.entity.StudyResource;
 import com.interviewforge.backend.studyresource.repository.StudyResourceRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -20,8 +19,8 @@ public class RagIngestionServiceImpl implements RagIngestionService {
 
     private final StudyResourceRepository studyResourceRepository;
     private final TextChunkingService textChunkingService;
-    private final EmbeddingService embeddingService;
-    private final ChromaService chromaService;
+    private final JinaEmbeddingClient embeddingClient;
+    private final VectorRepository vectorRepository;
 
     @Override
     public void ingestAsync(Long studyResourceId, String rawText) {
@@ -56,27 +55,25 @@ public class RagIngestionServiceImpl implements RagIngestionService {
 
             log.info("Embedding started...");
 
-            List<List<Float>> embeddings = embeddingService.embed(chunks);
+            List<List<Float>> embeddings = embeddingClient.embed(chunks);
 
             log.info("Embedding completed.");
             log.info("Generated {} embeddings.", embeddings.size());
 
-            List<String> ids = chunks.stream()
-                    .map(chunk -> UUID.randomUUID().toString())
-                    .toList();
+            log.info("Saving embeddings to PostgreSQL...");
 
-            log.info("Sending documents to Chroma...");
+            for (int i = 0; i < chunks.size(); i++) {
 
-            chromaService.addDocuments(
-                    ids,
-                    chunks,
-                    embeddings,
-                    resource.getUser().getId(),
-                    resource.getId(),
-                    resource.getTopic()
-            );
+                vectorRepository.saveChunk(
+                        resource.getUser().getId(),
+                        resource.getId(),
+                        resource.getTopic(),
+                        chunks.get(i),
+                        embeddings.get(i)
+                );
+            }
 
-            log.info("Documents successfully stored in Chroma.");
+            log.info("Embeddings successfully stored in PostgreSQL.");
 
             updateStatus(
                     studyResourceId,
@@ -98,17 +95,18 @@ public class RagIngestionServiceImpl implements RagIngestionService {
             log.error("========================================");
 
             try {
+
                 updateStatus(
                         studyResourceId,
                         StudyResource.IngestionStatus.FAILED
                 );
+
             } catch (Exception updateException) {
 
                 log.error(
                         "Failed to update ingestion status to FAILED.",
                         updateException
                 );
-
             }
         }
     }

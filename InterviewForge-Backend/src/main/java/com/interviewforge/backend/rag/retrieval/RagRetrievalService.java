@@ -1,35 +1,46 @@
 package com.interviewforge.backend.rag.retrieval;
 
 import com.interviewforge.backend.common.config.properties.RagProperties;
-import com.interviewforge.backend.rag.chroma.store.ChromaService;
-import com.interviewforge.backend.rag.dto.response.RetrievedChunk;
-import com.interviewforge.backend.rag.embedding.EmbeddingService;
+import com.interviewforge.backend.rag.embedding.JinaEmbeddingClient;
+import com.interviewforge.backend.rag.vector.VectorDocument;
+import com.interviewforge.backend.rag.vector.VectorRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RagRetrievalService {
 
-    private final EmbeddingService embeddingService;
-    private final ChromaService chromaService;
+    private final JinaEmbeddingClient embeddingClient;
+    private final VectorRepository vectorRepository;
     private final RagProperties ragProperties;
 
-    public List<String> retrieveForUser(String question, Long userId) {
+    public List<String> retrieveForUser(
+            String question,
+            Long userId
+    ) {
 
-        List<Float> queryEmbedding = embeddingService.embed(question);
+        log.info("Generating embedding for user question...");
 
-        List<RetrievedChunk> retrievedChunks =
-                chromaService.similaritySearch(
-                        queryEmbedding,
-                        ragProperties.getTopK(),
-                        userId
+        List<Float> embedding = embeddingClient.embed(question);
+
+        log.info("Searching similar chunks...");
+
+        List<VectorDocument> documents =
+                vectorRepository.findSimilarChunks(
+                        userId,
+                        embedding,
+                        ragProperties.getTopK()
                 );
 
-        return retrievedChunks.stream()
-                .map(RetrievedChunk::content)
+        log.info("Retrieved {} chunks.", documents.size());
+
+        return documents.stream()
+                .map(VectorDocument::getContent)
                 .toList();
     }
 }

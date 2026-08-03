@@ -1,65 +1,65 @@
 package com.interviewforge.backend.rag.controller;
 
-import com.interviewforge.backend.rag.chroma.store.ChromaService;
-import com.interviewforge.backend.rag.dto.response.RetrievedChunk;
-import com.interviewforge.backend.rag.embedding.EmbeddingService;
+import com.interviewforge.backend.rag.embedding.JinaEmbeddingClient;
+import com.interviewforge.backend.rag.vector.VectorDocument;
+import com.interviewforge.backend.rag.vector.VectorRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
-@RequestMapping("/test")
+@RequestMapping("/api/v1/test/embedding")
 @RequiredArgsConstructor
 public class EmbeddingTestController {
 
-    private final EmbeddingService embeddingService;
-    private final ChromaService chromaService;
+    private final JinaEmbeddingClient embeddingClient;
+    private final VectorRepository vectorRepository;
 
-    @GetMapping("/embedding")
-    public Integer embedding() {
+    @GetMapping("/vector")
+    public List<Float> generateEmbedding(
+            @RequestParam String text
+    ) {
 
-        List<Float> vector =
-                embeddingService.embed("Spring Boot is awesome");
-
-        return vector.size();
+        return embeddingClient.embed(text);
     }
 
-    @GetMapping("/add")
-    public String add() {
-
-        List<String> docs = List.of(
-                "Spring Boot is a Java framework."
-        );
-
-        List<List<Float>> embeddings =
-                embeddingService.embed(docs);
-
-        chromaService.addDocuments(
-                List.of(UUID.randomUUID().toString()),
-                docs,
-                embeddings,
-                1L,
-                999L,
-                "Spring Boot"
-        );
-
-        return "Stored Successfully";
-    }
-
-    @GetMapping("/query")
-    public List<RetrievedChunk> query() {
+    @PostMapping("/store")
+    public String storeDocument(
+            @RequestParam Long userId,
+            @RequestParam Long studyResourceId,
+            @RequestParam String topic,
+            @RequestBody String content
+    ) {
 
         List<Float> embedding =
-                embeddingService.embed("What is Spring Boot?");
+                embeddingClient.embed(content);
 
-        return chromaService.similaritySearch(
+        vectorRepository.saveChunk(
+                userId,
+                studyResourceId,
+                topic,
+                content,
+                embedding
+        );
+
+        return "Document stored successfully.";
+    }
+
+    @GetMapping("/search")
+    public List<VectorDocument> search(
+            @RequestParam Long userId,
+            @RequestParam String question,
+            @RequestParam(defaultValue = "5") int topK
+    ) {
+
+        List<Float> embedding =
+                embeddingClient.embed(question);
+
+        return vectorRepository.findSimilarChunks(
+                userId,
                 embedding,
-                5,
-                1L
+                topK
         );
     }
 }

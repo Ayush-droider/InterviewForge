@@ -6,9 +6,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "chroma")
-public class ChromaProperties {
-    private String tenant;
-    private String database;
-    private String collection;
+@ConfigurationProperties(prefix = "jina")
+public class JinaProperties {
+
+    private String apiKey;
+
+    private String baseUrl;
+
+    private String model;
 }
